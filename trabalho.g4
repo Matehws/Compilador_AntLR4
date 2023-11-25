@@ -4,32 +4,32 @@ grammar trabalho;
 @members{
     // Código Java que será incorporado na classe gerada
     // Pode incluir métodos, variáveis, inicializadores, etc.
-    @members{
 	Variavel novaVariavel = new Variavel();
 	Print interCode = new Print();
 	String codJava = "";
 	int escopo;
 	int tipo;
-    }
 }
 
-comeca: 'comeco'{System.out.print(interCode.printComeco());};
-		declarar
-		'fim' {System.out.print(interCode.printFim());};
-		
+comeca: 'comeco'{System.out.println(interCode.printComeco());}
+		condic
+		'termina'{codigoJava += "\t}\n}";
+			     System.out.println(codigoJava);
+			     };
 
 
-
-   atrib:  ID {	boolean resultado = cv.jaExiste($ID.text);
+atrib:  ID {	boolean resultado = cv.jaExiste($ID.text);
 				if(!resultado){
 					System.err.println("A variavel "+$ID.text+" nao foi declarada");
 					System.exit(0);
+				else {
+					}
 				}
 			}
 		PV
      ;
 
-declvar:    (
+declarar:    (
                 tipo
                 ID { novaVariavel = new Variavel($ID.text, tipo, escopo);
                      boolean declarado = cv.adiciona(novaVariavel);
@@ -56,50 +56,26 @@ tipo:   (
    ;
 
 
-senao:   'se' AP comparador FP AC cmd FC
-		('senao' AC cmd FC )?
-	;
-
-comparador:   (ID | NUM) OPREL (ID | NUM)
+condic:   'se' {codJava += "if "} AP comparador FP AC cmd FC
+		  ('senao' AC cmd FC)?
+		  PV;
+	
+comparador: (ID {codJava += "$ID.text "}| NUM {codJava += $NUM.text}) (OPER_REL | OPER_ARIT) (ID {codJava += "$ID.text "}| NUM {codJava += $NUM.text})
     ;
 
-cmd:    (cond |atrib)*
+cmd:    (condic | atrib | comparador)*
    ;
 
-enquanto:
-
-
-para: 
-
-
-
-termina:
-
-
-
-declarar:	'numero' {System.out.print("\nint ");}
-			ID {System.out.print($ID.text+";\n");} PV;
-			
-			
-printar:	'printar' ID {}
-
-
-
-
-   
-   
-teclar:
-			
 
 ID : [a-zA-Z]+;
 NUM: [0-9]+;
-FRAC: ([0-9]+)+","+[0-9]*;
-PV: ';' ;
-AP: '(' ;
-FP: ')' ;
-AC: '{' ;
-FC: '}' ;
-OPER_ATRIB: ':=';
-OPER_ARITMETICO: '/' | '*' | '-' | '+';
-OPER_REL: '>' | '<' | '>=' | '<=' | '==' | '!=' ;
+FRAC: ([0-9]+)+','+[0-9]*;
+PV: ';' {codJava += ";"};
+AP: '(' {codJava += "("};
+FP: ')' {codJava += ")"};
+AC: '{' {codJava += "{"};
+FC: '}' {codJava += "}"};
+OPER_ATRIB: ':=' {codJava += "="};
+OPER_ARIT: '/' {codJava += "/"} | '*' {codJava += "*"} | '-' {codJava += "-"} | '+'{codJava += "+"};
+OPER_REL: '>' {codJava += ">"} | '<' {codJava += "<"} | '>=' {codJava += ">="} | '<=' {codJava += "<="} | '==' {codJava += "=="} | '!=' {codJava += "!="};
 WS : [ \t\r\n]+ -> skip;
