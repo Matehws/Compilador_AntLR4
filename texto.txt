@@ -1,5 +1,6 @@
 comeco
-	se (3 >= 4) { 
-	} senao {
-	}
-termina
+mostra Salveamigos;
+se(3>=4){ 
+}senao{
+};
+termina;
