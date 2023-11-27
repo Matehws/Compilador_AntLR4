@@ -1,14 +1,19 @@
 	grammar trabalho;
 
 @header { import java.util.*; }
-@members{]
+@members{
 	Variavel novaVariavel = new Variavel();
 	ControleVariavel cv = new ControleVariavel();
 	String codJava = "";
 	int tipo;
+	String nome;
 }
 
-comeca: 'comeco'
+comeca: { codJava += "public class Codigo{\n\t";
+		}
+		'comeco'{ codJava += "public static void main(String args[]){\n\t\t"; 
+				}
+		printar
 		condic
 		'termina'{codJava += "\t}\n}";
 			     System.out.println(codJava);
@@ -50,10 +55,14 @@ tipo:   (
         )
    ;
 
+printar:	'mostra' ID {System.out.println($ID.text);}
+			PV;
 
-condic:   'se' {codJava += "if ";}  AP comparador FP AC cmd FC
-		  ('senao' {codJava += "else ";} AC cmd FC)?
-		  PV;
+texto: (ID | ESP)*;
+
+condic:   'se' {codJava += "if ";}  AP apj comparador FP fpj AC acj cmd FC fcj
+		  ('senao' {codJava += "else ";} AC acj cmd FC fcj)?
+		  PV pvj;
 	
 comparador: (ID {codJava += $ID.text;}| NUM {codJava += $NUM.text;}) (OPER_REL | OPER_ARIT) (ID {codJava += $ID.text;}| NUM {codJava += $NUM.text;})
 			;
@@ -61,17 +70,24 @@ comparador: (ID {codJava += $ID.text;}| NUM {codJava += $NUM.text;}) (OPER_REL |
 cmd:    (condic | atrib | comparador)*
 		;
 
+pvj:			{codJava += ";";};
+apj:			{codJava += "(";};
+fpj:			{codJava += ")";};
+acj:			{codJava += "{";};
+fcj:			{codJava += "}";};
+espj:			{codJava += " ";};
+oper_atribj:	{codJava += "=";};
 
-ID : [a-zA-Z]+;
-NUM: [0-9]+;
-FRAC: ([0-9]+)+','+[0-9]*;
-PV: ';' {codJava += ";";};
-AP: '(' {codJava += "(";};
-FP: ')' {codJava += ")";};
-AC: '{' {codJava += "{";};
-FC: '}' {codJava += "}";};
-ESP: ' ' {codJava += " ";};
-OPER_ATRIB: ':=' {codJava += "=";};
+ID :	[a-zA-Z]+;
+NUM:	[0-9]+;
+FRAC:	([0-9]+)+','+[0-9]*;
+PV:		';' ;
+AP:		'(' ;
+FP:		')' ;
+AC:		'{' ;
+FC:		'}' ;
+ESP:	' ' ;
+OPER_ATRIB: ':=' ;
 OPER_ARIT: '/' {codJava += "/";} | '*' {codJava += "*";} | '-' {codJava += "-";} | '+'{codJava += "+";};
 OPER_REL: '>' {codJava += ">";} | '<' {codJava += "<";} | '>=' {codJava += ">=";} | '<=' {codJava += "<=";} | '==' {codJava += "==";} | '!=' {codJava += "!=";};
 WS : [ \t\r\n]+ -> skip;
