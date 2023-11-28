@@ -73,12 +73,11 @@ condic:   	'se' {codJava += "if ";}  AP apj comparador FP fpj AC acj cmd FC fcj
 comparador:	expr (OPER_REL_MAI {codJava += ">=";}) expr
 			;
 
-cmd:    (condic 
-	|	atrib 
-	|	comparador 
-	|	ESP 
-	|	expr 
-	|	ESP)*
+cmd:    (condic
+	|	atrib
+	|	comparador
+	|	ESP
+	|	expr)*
 		;
 		
 expr:   expr (OPER_ARIT_VEZ {codJava += "*";} | OPER_ARIT_DIV {codJava += "/";}) expr
