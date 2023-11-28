@@ -13,8 +13,8 @@ comeca: { codJava += "public class Codigo{\n\t";
 		}
 		'comeco'{ codJava += "public static void main(String args[]){\n\t\t"; 
 				}
-		printar
 		condic
+		printar
 		'termina'{codJava += "\t}\n}";
 			     System.out.println(codJava);
 			     };
@@ -55,39 +55,93 @@ tipo:   (
         )
    ;
 
-printar:	'mostra' ID {System.out.println($ID.text);}
+printar:	'mostra ' texto {codJava += "System.out.println("+$texto.text+");";}  #TEM QUE COLOCAR " " EM VOLTA DO PRINT, SE NÃO FICA ERRADO
 			PV;
 
-texto: (ID | ESP)*;
 
-condic:   'se' {codJava += "if ";}  AP apj comparador FP fpj AC acj cmd FC fcj
-		  ('senao' {codJava += "else ";} AC acj cmd FC fcj)?
-		  PV pvj;
+texto:		(ID 
+	|		ESP 
+	|		expr 
+	|		FRAC 
+	|		NUM )*;
+
+
+condic:   	'se' {codJava += "if ";}  AP apj comparador FP fpj AC acj cmd FC fcj
+			('senao' {codJava += "else ";} AC acj cmd FC fcj)?
+			PV pvj {codJava += "\n";};
 	
-comparador: (ID {codJava += $ID.text;}| NUM {codJava += $NUM.text;}) (OPER_REL | OPER_ARIT) (ID {codJava += $ID.text;}| NUM {codJava += $NUM.text;})
+comparador:	expr (OPER_REL_MAI {codJava += ">=";}) expr
 			;
 
-cmd:    (condic | atrib | comparador)*
+cmd:    (condic 
+	|	atrib 
+	|	comparador 
+	|	ESP 
+	|	expr 
+	|	ESP)*
 		;
+		
+expr:   expr (OPER_ARIT_VEZ {codJava += "*";} | OPER_ARIT_DIV {codJava += "/";}) expr
+    |   expr (OPER_ARIT_MAI {codJava += "+";} | OPER_ARIT_MEN {codJava += "-";}) expr
+    |   NUM {codJava += $NUM.text;}
+	|   FRAC {codJava += $FRAC.text;}
+    |   ID {codJava += $ID.text;}
+    |   AP apj expr FP fpj;
+
+stat:   expr
+    |   ID OPER_ATRIB oper_atribj expr
+    |   laco
+    |   comparador
+    ;
+	
+laco: 	'enquanto' AP apj comparador FP fpj AC acj stat FC fcj
+		;
+		
 
 pvj:			{codJava += ";";};
 apj:			{codJava += "(";};
 fpj:			{codJava += ")";};
-acj:			{codJava += "{";};
+acj:			{codJava += "{ \n";};
 fcj:			{codJava += "}";};
 espj:			{codJava += " ";};
-oper_atribj:	{codJava += "=";};
 
-ID :	[a-zA-Z]+;
-NUM:	[0-9]+;
-FRAC:	([0-9]+)+','+[0-9]*;
-PV:		';' ;
-AP:		'(' ;
-FP:		')' ;
-AC:		'{' ;
-FC:		'}' ;
-ESP:	' ' ;
-OPER_ATRIB: ':=' ;
-OPER_ARIT: '/' {codJava += "/";} | '*' {codJava += "*";} | '-' {codJava += "-";} | '+'{codJava += "+";};
-OPER_REL: '>' {codJava += ">";} | '<' {codJava += "<";} | '>=' {codJava += ">=";} | '<=' {codJava += "<=";} | '==' {codJava += "==";} | '!=' {codJava += "!=";};
-WS : [ \t\r\n]+ -> skip;
+oper_atribj:	{codJava += "=";};
+oper_arit_divj: {codJava += "/";};
+oper_arit_vezj: {codJava += "*";};
+oper_arit_menj: {codJava += "-";};
+oper_arit_maij: {codJava += "+";};
+
+oper_rel_maj:   {codJava += ">";};
+oper_rel_mej:   {codJava += "<";};
+oper_rel_maij:  {codJava += ">=";};
+oper_rel_meij:  {codJava += "<=";};
+oper_rel_iij:   {codJava += "==";};
+oper_rel_eij:   {codJava += "!=";};
+
+
+ID :		[a-zA-Z]+;
+NUM:		[0-9]+;
+FRAC:		([0-9]+)+','+[0-9]*;
+PV:			';' ;
+AP:			'(' ;
+FP:			')' ;
+AC:			'{' ;
+FC:			'}' ;
+ESP:		' ' ;
+OPER_ATRIB: '=' | ':' | ':=';
+
+OPER_ARIT_DIV: '/';
+OPER_ARIT_VEZ: '*';
+OPER_ARIT_MEN: '-';
+OPER_ARIT_MAI: '+';
+
+OPER_REL_MA:	'>';
+OPER_REL_ME: 	'<';
+OPER_REL_MAI: 	'>=';
+OPER_REL_MEI:	'<=';
+OPER_REL_II:	'==';
+OPER_REL_EI: 	'!=';
+
+OU: 	'||';
+E:  	'&&';
+WS: 	[ \t\r\n]+ -> skip;
