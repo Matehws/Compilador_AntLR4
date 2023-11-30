@@ -13,23 +13,27 @@ comeca: { codJava += "public class Codigo{\n\t";
 		}
 		'comeco'{ codJava += "public static void main(String args[]){\n\t\t"; 
 				}
-		condic
-		printar
+		operacao
 		'termina'{codJava += "\t}\n}";
 			     System.out.println(codJava);
 			     };
 
 
-atrib:  ID {	boolean resultado = cv.jaExiste($ID.text);
+atrib:  ID ESP {	boolean resultado = cv.jaExiste($ID.text);
 				if(!resultado){
 					System.err.println("A variavel "+$ID.text+" nao foi declarada");
 					System.exit(0);
 					}
-				}
-		PV
-     ;
+				else {codJava += $ID.text+" ";};
+					}
+		OPER_ATRIB oper_atribj ESP
+		(ID {codJava += $ID.text;}
+		| NUM {codJava += $NUM.text;} 
+		| FRAC {codJava += $FRAC.text;})
+		PV pvj {codJava += "\n";} 
+		;
 
-declarar:    (
+declarar:   (
                 tipo
                 ID { novaVariavel = new Variavel($ID.text, tipo);
                      boolean declarado = cv.adiciona(novaVariavel);
@@ -39,49 +43,78 @@ declarar:    (
 					 }
 					 codJava += $ID.text;
 				   }
-		        PV {codJava += ";\n";}
-		    )*
+		        PV pvj {codJava += "\n";}
+		    )+
        ;
 
 tipo:   (
-            'natural'   {	tipo = 0;
+            'natural '   {	tipo = 0;
 							codJava += "int ";
 						} |
-            'texto'     {	tipo = 1;
+            'texto '     {	tipo = 1;
 							codJava += "String ";
 						} |
-            'decimal'   {	tipo = 2;
+            'decimal '   {	tipo = 2;
 							codJava += "float ";}
         )
    ;
 
-printar:	'mostra ' texto {codJava += "System.out.println("+$texto.text+");";}  #TEM QUE COLOCAR " " EM VOLTA DO PRINT, SE NÃO FICA ERRADO
-			PV;
+printar:	'mostra ' {codJava += "\nSystem.out.println(";} (ID {codJava += $ID.text;} | texto {codJava += $texto.text;})
+			{codJava += ")";}
+			PV pvj
+			;
+			
+texto:		'"' (ID
+	|		ESP
+	|		FRAC
+	|		NUM)*
+			'"'
+	;
+	
+textoEscreve:	(ID
+	|			ESP
+	|			FRAC
+	|			NUM)*
+	;
 
+teclar: 'escreve ' ID PV {
+    codJava += "Scanner scanner = new Scanner(System.in);\n";
+    codJava += $ID.text + " = scanner.next();\n";
+};				
 
-texto:		(ID 
-	|		ESP 
-	|		expr 
-	|		FRAC 
-	|		NUM )*;
-
-
-condic:   	'se' {codJava += "if ";}  AP apj comparador FP fpj AC acj cmd FC fcj
-			('senao' {codJava += "else ";} AC acj cmd FC fcj)?
+condic:   	'se' {codJava += "\nif ";}  AP apj comparador FP fpj AC acj cmd FC fcj
+			('senao' {codJava += "\nelse ";} AC acj cmd FC fcj)?
 			PV pvj {codJava += "\n";};
 	
-comparador:	expr (OPER_REL_MAI {codJava += ">=";}) expr
+comparador:	expr	(OPER_REL_MA oper_rel_maj
+					| OPER_REL_ME oper_rel_mej
+					| OPER_REL_MAI oper_rel_maij
+					| OPER_REL_MEI oper_rel_meij
+					| OPER_REL_II oper_rel_iij
+					| OPER_REL_EI oper_rel_eij
+					) expr
+			;
+
+operacao: 	( declarar
+			| atrib
+			| expr 
+			| enquantoLoop
+			| condic 
+			| printar 
+			| teclar
+			| paraLoop)+
 			;
 
 cmd:    (condic
 	|	atrib
 	|	comparador
 	|	ESP
-	|	expr)*
-		;
+	|	expr
+	|	printar)*
+	;
 		
-expr:   expr (OPER_ARIT_VEZ {codJava += "*";} | OPER_ARIT_DIV {codJava += "/";}) expr
-    |   expr (OPER_ARIT_MAI {codJava += "+";} | OPER_ARIT_MEN {codJava += "-";}) expr
+expr:   expr (OPER_ARIT_VEZ oper_arit_vezj | OPER_ARIT_DIV oper_arit_divj) expr
+    |   expr (OPER_ARIT_MAI oper_arit_maij | OPER_ARIT_MEN oper_arit_menj) expr
     |   NUM {codJava += $NUM.text;}
 	|   FRAC {codJava += $FRAC.text;}
     |   ID {codJava += $ID.text;}
@@ -89,13 +122,16 @@ expr:   expr (OPER_ARIT_VEZ {codJava += "*";} | OPER_ARIT_DIV {codJava += "/";})
 
 stat:   expr
     |   ID OPER_ATRIB oper_atribj expr
-    |   laco
+    |   enquantoLoop
     |   comparador
     ;
-	
-laco: 	'enquanto' AP apj comparador FP fpj AC acj stat FC fcj
+
+enquantoLoop: 	'enquanto ' {codJava += "\nwhile ";} AP apj comparador FP fpj AC acj stat FC fcj
 		;
 		
+paraLoop: 'para ' {codJava += "\nfor ";} AP apj ID 'de' NUM 'ate' NUM AC cmd FC;
+
+
 
 pvj:			{codJava += ";";};
 apj:			{codJava += "(";};
@@ -117,16 +153,15 @@ oper_rel_meij:  {codJava += "<=";};
 oper_rel_iij:   {codJava += "==";};
 oper_rel_eij:   {codJava += "!=";};
 
-
 ID :		[a-zA-Z]+;
 NUM:		[0-9]+;
-FRAC:		([0-9]+)+','+[0-9]*;
+FRAC:		([0-9]+)+'.'+[0-9]*;
 PV:			';' ;
 AP:			'(' ;
 FP:			')' ;
 AC:			'{' ;
 FC:			'}' ;
-ESP:		' ' ;
+ESP:		' '|'\n';
 OPER_ATRIB: '=' | ':' | ':=';
 
 OPER_ARIT_DIV: '/';
