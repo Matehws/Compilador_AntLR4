@@ -1,0 +1,9 @@
+comeca;
+inteiro a;
+texto b;
+a = 0;
+b : "ola";
+mostra a;
+mostra b;
+mostra "Fernando e muito legal";
+termina;

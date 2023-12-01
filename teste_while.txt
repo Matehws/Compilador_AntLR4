@@ -1,0 +1,9 @@
+comeca;
+inteiro Numero;
+Numero = 0;
+mostra "Teste 1";
+enquanto (Numero!=4){
+mostra "Valor nao eh 4";
+Numero++;
+};
+termina;

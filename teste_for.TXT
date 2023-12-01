@@ -1,0 +1,3 @@
+comeca;
+para(8)(<10)(++);
+termina;

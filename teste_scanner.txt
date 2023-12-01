@@ -1,0 +1,3 @@
+comeca;
+escreve;
+termina;
